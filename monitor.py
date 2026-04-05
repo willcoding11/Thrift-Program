@@ -15,6 +15,7 @@ Usage:
 
 import argparse
 import logging
+import os
 import sys
 import time
 
@@ -24,12 +25,21 @@ from deal_analyzer import analyze, format_deal
 from deal_tracker import filter_new
 from notifications.notifier import notify
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 logger = logging.getLogger("monitor")
+
+
+def setup_logging(log_file=None):
+    """Configure logging to console and optionally to a file."""
+    handlers = [logging.StreamHandler()]
+    if log_file:
+        os.makedirs(os.path.dirname(log_file) or ".", exist_ok=True)
+        handlers.append(logging.FileHandler(log_file))
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=handlers,
+    )
 
 SCRAPERS = {
     "craigslist": craigslist_scraper,
@@ -97,7 +107,13 @@ def main():
         "--once", action="store_true",
         help="Run once and exit instead of looping"
     )
+    parser.add_argument(
+        "--log-file", type=str,
+        help="Also write logs to this file (useful for PythonAnywhere/servers)"
+    )
     args = parser.parse_args()
+
+    setup_logging(args.log_file)
 
     config = load_config()
 

@@ -1,13 +1,20 @@
 """
 Notification system — sends deal alerts via desktop notifications and/or email.
+Auto-detects headless environments (like PythonAnywhere) and skips desktop.
 """
 
 import logging
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 logger = logging.getLogger(__name__)
+
+
+def _has_display():
+    """Check if a desktop display is available (False on servers/PythonAnywhere)."""
+    return bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
 
 
 def notify(deals, config):
@@ -19,7 +26,11 @@ def notify(deals, config):
     message = _build_message(deals)
 
     if notif_config.get("desktop", True):
-        send_desktop(deals)
+        if _has_display():
+            send_desktop(deals)
+        else:
+            logger.info("No display detected (server/PythonAnywhere) — skipping desktop notifications")
+            _print_deals(deals)
 
     email_cfg = notif_config.get("email", {})
     if email_cfg.get("enabled", False):
