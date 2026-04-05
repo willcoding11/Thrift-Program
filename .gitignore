@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.seen_deals.json
+config.json
+*.egg-info/
+dist/
+build/
+.env
+venv/
