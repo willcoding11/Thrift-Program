@@ -34,7 +34,11 @@ def notify(deals, config):
 
     email_cfg = notif_config.get("email", {})
     if email_cfg.get("enabled", False):
-        send_email(message, email_cfg)
+        method = email_cfg.get("method", "smtp")
+        if method == "resend":
+            send_email_resend(message, email_cfg)
+        else:
+            send_email(message, email_cfg)
 
 
 def send_desktop(deals):
@@ -101,6 +105,35 @@ def send_email(message, email_cfg):
         logger.info("Deal alert email sent to %s", recipient)
     except Exception as e:
         logger.error("Failed to send email: %s", e)
+
+
+def send_email_resend(message, email_cfg):
+    """Send a deal alert email via Resend API."""
+    try:
+        import resend
+    except ImportError:
+        logger.error("Resend not installed. Run: pip install resend")
+        return
+
+    api_key = email_cfg.get("resend_api_key", "")
+    recipient = email_cfg.get("recipient_email", "")
+
+    if not all([api_key, recipient]):
+        logger.warning("Resend not configured — skipping email notification.")
+        return
+
+    resend.api_key = api_key
+
+    try:
+        resend.Emails.send({
+            "from": "Thrift Deal Notifier <onboarding@resend.dev>",
+            "to": [recipient],
+            "subject": "Thrift Deal Alert - New Deals Found!",
+            "text": message,
+        })
+        logger.info("Deal alert email sent via Resend to %s", recipient)
+    except Exception as e:
+        logger.error("Failed to send email via Resend: %s", e)
 
 
 def _build_message(deals):
