@@ -26,6 +26,66 @@ WARN_KEYWORDS = [
     "damaged", "cracked", "salvage",
 ]
 
+# Compound phrases that clearly indicate an accessory, NOT the actual item.
+# These override even if the title mentions a real device name.
+ACCESSORY_PHRASES = [
+    "laptop case", "laptop bag", "laptop sleeve", "laptop stand",
+    "laptop charger", "laptop dock", "laptop cover", "laptop skin",
+    "laptop mount", "laptop tray", "laptop backpack", "laptop carry",
+    "laptop briefcase", "laptop cooling", "carrying case",
+    "phone case", "phone charger", "phone cord", "phone cable",
+    "phone mount", "phone holder", "phone stand", "phone screen protector",
+    "iphone case", "iphone charger", "iphone cord", "iphone cable",
+    "iphone screen protector", "iphone cover",
+    "macbook case", "macbook charger", "macbook sleeve", "macbook cover",
+    "macbook skin", "macbook adapter", "macbook cable",
+    "power adapter", "ac adapter", "power supply",
+    "docking station", "dock station",
+    "screen protector", "tempered glass",
+    "printer bed", "print bed", "bed plate", "pei plate", "build plate",
+    "printer nozzle", "hot end", "hotend", "extruder",
+    "heat sink", "limit switch", "printer parts", "printer cable",
+    "filament", "printer plate",
+    "remote control", "webcam", "web camera",
+    "fisher price", "toy phone", "toy laptop",
+    "figurine", "poster", "magazine rack", "cushion",
+    "battery for", "keyboard for",
+    "laptop box", "shelf cart", "desk ", "office desk",
+    "backpack", "messenger bag", "travel bag", "computer bag",
+    "usb hub", "usb adapter", "usb c to", "type-c to",
+    "hdmi adapter", "hdmi cable", "multiport",
+    "surge protector", "power strip", "extension cord",
+    "wifi card", "wireless card",
+    "iphone case", "galaxy case", "samsung case",
+    "otterbox", "wallet case", "wristlet",
+    "charging stand", "charging pad", "charging dock",
+    "cable lock", "lockable cover",
+    "sleeve case", "protective cover",
+    "cast iron", "trophy", "auction",
+    "reprap", "controller board",
+    "bolts", "screws", "fastener",
+    "iphone case", " case fits", " cases total", "pro max case",
+    "pro case", "ultra case", " case new", " case &",
+    "pixel case", "minimalist slim",
+    "galaxy buds", "pixel buds", "earbuds", "earphones",
+    "galaxy watch", "smart watch", "smartwatch",
+    "galaxy tab", "galaxy tablet",
+    "carplay adapter", "tunecast",
+    "screen replacement", "repair service",
+    "cd player", "sous vide", "cooker", "bluetooth speaker",
+    "modem", "router",
+    "wallet tracker", "item finder", "airtag",
+    "charging station", "cd slot mount",
+    "misc. cable", "box of misc",
+    "ender plate", "creality plate",
+    "thinkpad dock", "thinkpad battery", "thinkpad thunderbolt",
+    "mini dock",
+    "dual 4k", "video adapter", "hdmi converter",
+    "oem lenovo", "oem battery", "yoga battery",
+    "wifi adapter", "wi-fi adapter", "wireless adapter",
+    "usb adapter", "usb wireless",
+]
+
 
 def analyze(listings, config):
     """
@@ -63,6 +123,11 @@ def _score_listing(listing, max_price, min_discount):
     for kw in WARN_KEYWORDS:
         if kw in title:
             return 0
+
+    # Filter out accessories — if the title matches a known accessory phrase,
+    # it's not the actual device, just an add-on
+    if any(phrase in title for phrase in ACCESSORY_PHRASES):
+        return 0
 
     # --- Price scoring (0-50 points) ---
     if price <= 0:
